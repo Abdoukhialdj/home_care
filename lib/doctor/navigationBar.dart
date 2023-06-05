@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/services.dart';
 import 'package:home_me/doctor/Exitepage.dart';
-import 'package:home_me/doctor/ProfileDoct.dart';
 import 'package:home_me/doctor/Settings.dart';
 import 'package:home_me/doctor/dashboard.dart';
+
+import '../doctor/Profile.dart';
 
 
 
@@ -86,7 +87,7 @@ class _NavigationBaarState extends State<NavigationBaar> {
       widget =const Dashboard();
         break;
       case 1:
-      widget =const Profile();
+      widget =const ProFile();
         break;
 
         case 2:

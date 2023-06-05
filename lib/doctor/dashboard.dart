@@ -14,7 +14,7 @@ class Dashboard extends StatefulWidget {
 class _DashboardState extends State<Dashboard> {
   List imgs=[
     "plan.png",
-    "tashe.png",
+    "team.png",
     "typerepport.png",
     "absent.png",
     

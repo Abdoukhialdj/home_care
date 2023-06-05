@@ -22,9 +22,9 @@ class _DashboardState extends State<Dashboard> {
 
   List texte=[
     'Consult Plan',
-    "Team Mates",
-    "Type Repport",
-    "Declare Absence",
+    "Teams",
+    "recieved reports",
+    "Declared absance",
     
 
   ];

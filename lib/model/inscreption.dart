@@ -1,236 +1,329 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:geolocator/geolocator.dart';
 
 import '../fieldScreen.dart';
-import 'ComptePatient.dart';
+
+enum Gender { male, female }
 
 class InscreptionForm extends StatefulWidget {
-  const InscreptionForm({super.key});
+  const InscreptionForm({Key? key}) : super(key: key);
 
   @override
-  State<InscreptionForm> createState() => _InscreptionFormState();
+  _InscreptionFormState createState() => _InscreptionFormState();
 }
 
 class _InscreptionFormState extends State<InscreptionForm> {
-  TextEditingController dateController=TextEditingController();
-  bool passToggle =true;
-  String firstName='';
-  String lastName='';
-  String  phone='';
-  String adress='';
-  String  birthDay='';
-  TextEditingController _confirmPassword =TextEditingController();
-  final _formKey =GlobalKey<FormState>();
-  final passcontroller=TextEditingController();
+  Gender? _gender;
+  TextEditingController _firstNameController = TextEditingController();
+  TextEditingController _lastNameController = TextEditingController();
+  TextEditingController _phoneNumberController = TextEditingController();
+  TextEditingController _emailController = TextEditingController();
+  TextEditingController _passwordController = TextEditingController();
+  TextEditingController _confirmPasswordController = TextEditingController();
+  TextEditingController _addressController = TextEditingController();
+
+  bool passToggle = true;
+  bool confirmPassToggle = true;
+
   @override
-  void initState(){
-    super.initState();
-    dateController.text='';
-  }
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Container(
-          padding: EdgeInsets.symmetric(vertical: 50,
-              horizontal: 30
-          ),
-          child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment:CrossAxisAlignment.stretch ,
-                children: [
-                  Image.asset('assets/homecare.png',height: 100,width: 100),
-                  Center(
-                    child: Text('Creer un compte ',
-                      style:TextStyle(fontSize: 25) ,),
-                  ),
-                  SizedBox(
-                    height: 10,
-                  ),
-                  TextFormField(
-                    keyboardType: TextInputType.text,
-                    decoration: InputDecoration(
-                      labelText: 'First Name',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.person),
-                      filled: true,
-                    ),
-                    validator: (val) => val!.isEmpty ? 'Entrer your First Name':null,
-                    onChanged: (val) => firstName =val,
-                  ),
-                  SizedBox(
-                    height: 20,
-                  ),
-                  TextFormField(
-                    decoration: InputDecoration(
-                        labelText: 'Last Name',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.person)
-                    ),
-                    validator: (val) => val!.isEmpty ? 'Entrer your Last Name':null,
-                    onChanged: (val) => lastName =val,
-                  ),
-                  SizedBox(
-                    height: 20,
-                  ),
-                  TextFormField(
-                    keyboardType: TextInputType.phone,
-                    decoration: InputDecoration(
-                        labelText: 'Phone',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.phone)
-                    ),
-                    validator: (val) => val!.isEmpty ? 'Entrer your phone':null,
-                    onChanged: (val) => phone=val,
-                  ),
-                  SizedBox(
-                    height: 20,
-                  ),
-                  TextFormField(
-                    decoration: InputDecoration(
-                        labelText: 'Adress',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.home)
-                    ),
-                    validator: (val) => val!.isEmpty ? 'Entrer your Adress':null,
-                    onChanged: (val) => adress=val,
-                  ),
-                  SizedBox(
-                    height: 20,
-                  ),
-                  TextFormField(
-                    controller:dateController ,
-                    decoration:  InputDecoration(
-                        prefixIcon: Icon(Icons.calendar_today),
-                        labelText: 'Birth day',
-                        border: OutlineInputBorder()
-                    ) ,
-                    validator: (val) => val!.isEmpty ? 'Entrer your Birth day':null,
-                    onChanged: (val) => birthDay =val,
-                    onTap: () async {
-                      DateTime? pickeDate= await  showDatePicker(context: context,
-                          initialDate:DateTime.now(),
-                          firstDate: DateTime(0000),
-                          lastDate: DateTime(2101)
-                      );
-                      if(pickeDate!=null){
-                        String formattedDate=DateFormat("yyyy-MM-dd").format(pickeDate);
-                        setState(() {
-                          dateController.text=pickeDate.toString();
-                        });
-                      }else{
-                        print('not selected');
-                      }
-                    },
-                  ),
-                  SizedBox(
-                    height: 20,
-                  ),
-                  TextFormField(
-                    keyboardType: TextInputType.visiblePassword,
-                    controller: passcontroller,
-                    obscureText: passToggle,
-
-                    decoration: InputDecoration(
-                        labelText: 'Password',
-                        border: OutlineInputBorder(),
-                        prefixIcon:Icon(Icons.lock),
-                        suffixIcon: InkWell(
-                          onTap: (){
-                            setState(() {
-                              passToggle = !passToggle;
-                            });
-                          },
-                          child: Icon(passToggle ? Icons.visibility :Icons.visibility_off ,color: Color.fromARGB(255, 241, 176, 10)),
-                        )
-
-                    ),
-                    validator: (value){
-                      if(  value!.isEmpty){
-                        return 'Entrer password';
-                      } else if (value.length <9){
-                        return "password length should not be less than 8 charactars";
-                      }
-                    },
-                  ),
-                  SizedBox(
-                    height: 20,
-                  ),
-                  TextFormField(
-                    controller:  _confirmPassword ,
-                    obscureText: true,
-                    decoration: InputDecoration(
-                        labelText: 'Valider password',
-                        border: OutlineInputBorder(),
-                        prefixIcon:Icon(Icons.lock,)
-                    ),
-
-                    validator: (value) {
-                      if(value!.isEmpty){
-                        return 'please enter re-password';
-                      }else if(passcontroller.text !=_confirmPassword.text){
-                        return 'password not correct';
-                      }  },
-                  ),
-                  SizedBox(
-                    height: 5,
-                  ),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20)
-                        )
-                    ),
-                    onPressed: (){
-                      if(_formKey.currentState!.validate()){
-                        //TODO:Appliquer de la logique
-                        print("compte created");
-                        passcontroller.clear();
-                        _confirmPassword.clear();
-                        Navigator.push(context,MaterialPageRoute(builder:(context)=>COmptePatient()));
-                      }
-                    },
-                    child:Text('S\'inscrire'),
-                  ),
-                  Padding(
-                      padding: const EdgeInsets.only(top:0.4),
-                      child: Center(
-                        child: Divider(
-                          color: Color.fromARGB(255, 28, 22, 22),
-                          indent:5,
-                          height: 10,
-
-                          thickness: 0.2,
-                        ),
-                      ) ),
-                  Row(
-                    mainAxisAlignment:MainAxisAlignment.center ,
-                    children: [
-                      Text(" you have acount  ?",
-                        style: TextStyle(
-                          fontSize: 16,
-                        ),
-                      ),
-                      TextButton(
-                        onPressed:(){
-                          Navigator.push(context,MaterialPageRoute(builder:(context)=>FormScreen()));
-                        },
-                        child: Text(
-                          'log in',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color:Color.fromARGB(255, 248, 185, 27),
-
-                          ),
-                        ),
-                      )
-                    ],
-                  )
-                ],
-              )
+      body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/background.jpg'),
+            fit: BoxFit.cover,
           ),
         ),
+        child: SingleChildScrollView(
+          child: Container(
+            padding: EdgeInsets.symmetric(
+              vertical: 50,
+              horizontal: 30,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Container(
+                  alignment: Alignment.center,
+                  child: Image.asset(
+                    'assets/homecare.png',
+                    height: 150,
+                    width: 150,
+                  ),
+                ),
+                SizedBox(height: 20),
+                TextFormField(
+                  controller: _firstNameController,
+                  decoration: InputDecoration(
+                    labelText: 'First Name',
+                    filled: true,
+                    fillColor: Color.fromARGB(255, 247, 231, 231).withOpacity(0.5),
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.person, color: Color.fromARGB(255, 248, 185, 27)),
+                  ),
+                  validator: (val) =>
+                  val!.isEmpty ? 'Enter your first name' : null,
+                ),
+                SizedBox(height: 10),
+                TextFormField(
+                  controller: _lastNameController,
+                  decoration: InputDecoration(
+                    labelText: 'Last Name',
+                    filled: true,
+                    fillColor: Color.fromARGB(255, 247, 231, 231).withOpacity(0.5),
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.person, color: Color.fromARGB(255, 248, 185, 27)),
+                  ),
+                  validator: (val) =>
+                  val!.isEmpty ? 'Enter your last name' : null,
+                ),
+                SizedBox(height: 10),
+                TextFormField(
+                  controller: _phoneNumberController,
+                  decoration: InputDecoration(
+                    labelText: 'Phone Number',
+                    filled: true,
+                    fillColor: Color.fromARGB(255, 247, 231, 231).withOpacity(0.5),
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.phone, color: Color.fromARGB(255, 248, 185, 27)),
+                  ),
+                  validator: (val) =>
+                  val!.isEmpty ? 'Enter your phone number' : null,
+                ),
+                SizedBox(height: 10),
+                TextFormField(
+                  controller: _emailController,
+                  decoration: InputDecoration(
+                    labelText: 'Email',
+                    filled: true,
+                    fillColor: Color.fromARGB(255, 247, 231, 231).withOpacity(0.5),
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.email, color: Color.fromARGB(255, 248, 185, 27)),
+                  ),
+                  validator: (val) =>
+                  val!.isEmpty ? 'Enter your email' : null,
+                ),
+                SizedBox(height: 10),
+                TextFormField(
+                  controller: _passwordController,
+                  obscureText: passToggle,
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    filled: true,
+                    fillColor: Color.fromARGB(255, 247, 231, 231).withOpacity(0.5),
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.lock, color: Color.fromARGB(255, 248, 185, 27)),
+                    suffixIcon: InkWell(
+                      onTap: () {
+                        setState(() {
+                          passToggle = !passToggle;
+                        });
+                      },
+                      child: Icon(
+                        passToggle ? Icons.visibility : Icons.visibility_off,
+                        color: Color.fromARGB(255, 248, 185, 27),
+                      ),
+                    ),
+                  ),
+                  validator: (val) =>
+                  val!.isEmpty ? 'Enter your password' : null,
+                ),
+                SizedBox(height: 10),
+                TextFormField(
+                  controller: _confirmPasswordController,
+                  obscureText: confirmPassToggle,
+                  decoration: InputDecoration(
+                    labelText: 'Confirm Password',
+                    filled: true,
+                    fillColor: Color.fromARGB(255, 247, 231, 231).withOpacity(0.5),
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.lock, color: Color.fromARGB(255, 248, 185, 27)),
+                    suffixIcon: InkWell(
+                      onTap: () {
+                        setState(() {
+                          confirmPassToggle = !confirmPassToggle;
+                        });
+                      },
+                      child: Icon(
+                        confirmPassToggle ? Icons.visibility : Icons.visibility_off,
+                        color: Color.fromARGB(255, 248, 185, 27),
+                      ),
+                    ),
+                  ),
+                  validator: (val) {
+                    if (val!.isEmpty) {
+                      return 'Confirm your password';
+                    } else if (val != _passwordController.text) {
+                      return 'Passwords do not match';
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: 10),
+                TextFormField(
+                  controller: _addressController,
+                  decoration: InputDecoration(
+                    labelText: 'Address',
+                    filled: true,
+                    fillColor: Color.fromARGB(255, 247, 231, 231).withOpacity(0.5),
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.home, color: Color.fromARGB(255, 248, 185, 27)),
+                  ),
+                  validator: (val) =>
+                  val!.isEmpty ? 'Enter your Address' : null,
+                  onTap: () async {
+                    LatLng? result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => SelectLocationScreen(),
+                      ),
+                    );
+                    if (result != null) {
+                      _addressController.text = result.toString();
+                    }
+                  },
+                ),
+                SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () {
+                    // Put your form submission logic here
+                  },
+                  child: Text("Submit"),
+                  style: ElevatedButton.styleFrom(
+                    primary: Colors.amber,
+                    padding: EdgeInsets.symmetric(vertical: 20),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30), // <-- Add this
+                    ),
+                  ),
+                ),
+                SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Already have an account? ",
+                      style: TextStyle(fontSize: 16),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => FormScreen(),
+                          ),
+                        );
+                      },
+                      child: Text(
+                        "Log in",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.amber,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class SelectLocationScreen extends StatefulWidget {
+  @override
+  _SelectLocationScreenState createState() => _SelectLocationScreenState();
+}
+
+class _SelectLocationScreenState extends State<SelectLocationScreen> {
+  LatLng? selectedLocation;
+  List<Marker> markers = [];
+
+  Future<void> _getUserLocation() async {
+    Position position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+    setState(() {
+      selectedLocation = LatLng(position.latitude, position.longitude);
+      markers.add(
+        Marker(
+          width: 80.0,
+          height: 80.0,
+          point: selectedLocation!,
+          builder: (ctx) => Container(
+            child: Icon(
+              Icons.location_on,
+              color: Colors.red,
+              size: 40,
+            ),
+          ),
+        ),
+      );
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _getUserLocation();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Select Location"),
+      ),
+      body: selectedLocation == null
+          ? Center(child: CircularProgressIndicator())
+          : FlutterMap(
+        options: MapOptions(
+          center: selectedLocation,
+          zoom: 13.0,
+          onTap: (LatLng, latlng) {
+            setState(() {
+              selectedLocation = latlng;
+              markers.clear();
+              markers.add(
+                Marker(
+                  width: 80.0,
+                  height: 80.0,
+                  point: latlng,
+                  builder: (ctx) => Container(
+                    child: Icon(
+                      Icons.location_on,
+                      color: Colors.red,
+                      size: 40,
+                    ),
+                  ),
+                ),
+              );
+            });
+          },
+        ),
+        layers: [
+          TileLayerOptions(
+            urlTemplate:
+            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            subdomains: ['a', 'b', 'c'],
+          ),
+          MarkerLayerOptions(markers: markers),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.check),
+        onPressed: () {
+          if (selectedLocation != null) {
+            Navigator.of(context).pop(selectedLocation);
+          }
+        },
       ),
     );
   }
