@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
+import '../main.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({Key? key}) : super(key: key);
@@ -25,18 +28,50 @@ class _DashboardState extends State<Dashboard> {
   DateTime? selectedDate;
   int selectedIndex = -1;
 
-  void _openCalendar(BuildContext context) async {
+  void _openCalendar(BuildContext context, VoidCallback callBack) async {
     final pickedDate = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
-      firstDate: DateTime(2022),
-      lastDate: DateTime(2023),
+      firstDate: DateTime(2023),
+      lastDate: DateTime(2025),
     );
     if (pickedDate != null) {
       setState(() {
         selectedDate = pickedDate;
       });
+      print(selectedDate);
+      callBack();
       _showDialog(context, pickedDate);
+    }
+  }
+
+  reserve(String path) async {
+    print(selectedDate);
+    try {
+      print(token);
+      print(selectedDate?.toUtc().toString());
+      await http.post(
+          Uri.parse(
+            "http://10.0.2.2:8000/$path/",
+            
+          ),
+          body: {
+            "patient" : token,
+            "appointment_time" : selectedDate?.toUtc().toString(),
+          },headers: {
+            "Authorization" : "Bearer $token"
+          }).then((value) {
+        print(value.body);
+        if (value.statusCode == 200) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar( const SnackBar(content: Text("reserved")));
+        }
+      }).catchError((error) {
+        print("object");
+        print(error);
+      });
+    } catch (e) {
+      print(e);
     }
   }
 
@@ -45,11 +80,11 @@ class _DashboardState extends State<Dashboard> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Selected Date'),
+          title: const Text('Selected Date'),
           content: Text('Date: ${pickedDate.toIso8601String()}'),
           actions: <Widget>[
             TextButton(
-              child: Text('Close'),
+              child: const Text('Close'),
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -67,10 +102,13 @@ class _DashboardState extends State<Dashboard> {
         backgroundColor: Colors.blue,
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
+          children: const[
             Text(
               'Hello patient',
-              style: TextStyle(color: Colors.white, fontSize: 25, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 25,
+                  fontWeight: FontWeight.bold),
             ),
             CircleAvatar(
               radius: 25,
@@ -86,9 +124,9 @@ class _DashboardState extends State<Dashboard> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(height: 15),
+             const SizedBox(height: 15),
               Row(
-                children: [
+                children: const[
                   Padding(
                     padding: EdgeInsets.only(left: 15),
                     child: Text(
@@ -103,9 +141,10 @@ class _DashboardState extends State<Dashboard> {
                   Expanded(child: Divider(color: Colors.blue)),
                 ],
               ),
-              SizedBox(height: 44),
+             const SizedBox(height: 44),
               GridView.builder(
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
+                gridDelegate : const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2),
                 itemCount: 4,
                 shrinkWrap: true,
                 physics: NeverScrollableScrollPhysics(),
@@ -116,18 +155,21 @@ class _DashboardState extends State<Dashboard> {
                         selectedIndex = index;
                       });
                       if (index == 0 || index == 1) {
-                        _openCalendar(context);
+                        _openCalendar(context, (){
+                          reserve(index == 0 
+                         ? "nurseappointments" : "doctorappointments");
+                        });
                       } else {
                         // Handle other cards
                       }
                     },
                     child: Container(
-                      margin: EdgeInsets.all(10),
-                      padding: EdgeInsets.symmetric(vertical: 15),
+                      margin: const EdgeInsets.all(10),
+                      padding: const EdgeInsets.symmetric(vertical: 15),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(10),
-                        boxShadow: [
+                        boxShadow:  const [
                           BoxShadow(
                             color: Colors.blue,
                             blurRadius: 4,
@@ -140,11 +182,13 @@ class _DashboardState extends State<Dashboard> {
                         children: [
                           CircleAvatar(
                             radius: 40,
-                            backgroundImage: AssetImage("assets/${imgs[index]}"),
+                            backgroundImage:
+                                AssetImage("assets/${imgs[index]}"),
                           ),
                           Text(
                             "${texte[index]}",
-                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                                fontSize: 20, fontWeight: FontWeight.bold),
                           ),
                         ],
                       ),

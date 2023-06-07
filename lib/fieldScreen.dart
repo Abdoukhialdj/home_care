@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:home_me/main.dart';
 import 'package:home_me/patient/navpatient.dart';
 
 import 'doctor/navigationBar.dart';
@@ -7,6 +10,7 @@ import 'driver/navdriver.dart';
 import 'model/getHelp.dart';
 import 'model/inscreption.dart';
 import 'nurse/navnurse.dart';
+import 'package:http/http.dart' as http;
 
 class FormScreen extends StatefulWidget {
   const FormScreen({super.key});
@@ -29,14 +33,69 @@ class _FormScreenState extends State<FormScreen> {
 
   bool passToggle = true;
 
+  login() async {
+    try {
+      await http.post(
+          Uri.parse(
+            "http://10.0.2.2:8000/login/",
+          ),
+          body: {
+            "role": _SelectedVal?.toLowerCase(),
+            "email": emailcontroller.text,
+            "password": passcontroller.text,
+          }).then((value) {
+        print(value.body);
+        if (value.statusCode == 200) {
+          var body = jsonDecode(value.body);
+          token = body["access_token"];
+          email = emailcontroller.text;
+          if (_SelectedVal == 'Patient') {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const Navnpatient(),
+              ),
+            );
+          } else if (_SelectedVal == 'Doctor') {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const NavigationBaar(),
+              ),
+            );
+          } else if (_SelectedVal == 'Nurse') {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const Navnurse(),
+              ),
+            );
+          } else if (_SelectedVal == 'Driver') {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const Navdriver(),
+              ),
+            );
+          }
+        }
+      }).catchError((error) {
+        print(error);
+      });
+    } catch (e) {
+      print(e);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
         body: Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             image: DecorationImage(
-              image: AssetImage('assets/background.jpg'), // Replace with your image path
+              image: AssetImage(
+                  'assets/background.jpg'), // Replace with your image path
               fit: BoxFit.cover,
             ),
           ),
@@ -64,17 +123,17 @@ class _FormScreenState extends State<FormScreen> {
                         labelText: "Email",
                         border: OutlineInputBorder(),
                         filled: true,
-                        fillColor: Color.fromARGB(255, 247, 231, 231)
-                            .withOpacity(0.5),
+                        fillColor:
+                            Color.fromARGB(255, 247, 231, 231).withOpacity(0.5),
                         prefixIcon: Icon(
                           Icons.email,
                           color: Color.fromARGB(255, 248, 185, 27),
                         ),
                       ),
                       validator: (value) {
-                        bool emailValid = RegExp(
-                            r"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$")
-                            .hasMatch(value!);
+                        bool emailValid =
+                            RegExp(r"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$")
+                                .hasMatch(value!);
                         if (value.isEmpty) {
                           return 'Please Enter Email';
                         } else if (!emailValid) {
@@ -92,8 +151,8 @@ class _FormScreenState extends State<FormScreen> {
                       decoration: InputDecoration(
                         labelText: "Password",
                         filled: true,
-                        fillColor: Color.fromARGB(255, 247, 231, 231)
-                            .withOpacity(0.5),
+                        fillColor:
+                            Color.fromARGB(255, 247, 231, 231).withOpacity(0.5),
                         border: OutlineInputBorder(),
                         prefixIcon: Icon(
                           Icons.lock,
@@ -106,7 +165,9 @@ class _FormScreenState extends State<FormScreen> {
                             });
                           },
                           child: Icon(
-                            passToggle ? Icons.visibility : Icons.visibility_off,
+                            passToggle
+                                ? Icons.visibility
+                                : Icons.visibility_off,
                             color: Color.fromARGB(255, 248, 185, 27),
                           ),
                         ),
@@ -114,12 +175,12 @@ class _FormScreenState extends State<FormScreen> {
                       validator: (value) {
                         if (value!.isEmpty) {
                           return 'Entrer password';
-                        } else if (value.length < 9) {
+                        } else if (value.length < 8) {
                           return "password length should not be less than 8 characters";
                         }
                       },
                     ),
-                    SizedBox(
+                  const  SizedBox(
                       height: 20,
                     ),
                     Container(
@@ -128,12 +189,12 @@ class _FormScreenState extends State<FormScreen> {
                         borderRadius: BorderRadius.circular(3),
                         border: Border.all(
                             color: Color.fromARGB(69, 54, 44, 44), width: 0.5),
-                        color: Color.fromARGB(255, 247, 231, 231)
-                            .withOpacity(0.5),
+                        color:
+                            Color.fromARGB(255, 247, 231, 231).withOpacity(0.5),
                       ),
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<String>(
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: Color.fromARGB(181, 8, 8, 5),
                             fontSize: 16,
                           ),
@@ -141,59 +202,28 @@ class _FormScreenState extends State<FormScreen> {
                           value: _SelectedVal,
                           isExpanded: true,
                           iconSize: 36,
-                          icon: Icon(
+                          icon: const Icon(
                             Icons.arrow_drop_down,
                             color: Colors.amber,
                           ),
                           items: _speList
                               .map((item) => DropdownMenuItem(
-                            child: Text(item),
-                            value: item,
-                          ))
+                                    child: Text(item),
+                                    value: item,
+                                  ))
                               .toList(),
                           onChanged: (item) =>
                               setState(() => _SelectedVal = item),
                         ),
                       ),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 30,
                     ),
                     InkWell(
                       onTap: () {
                         if (_formfield.currentState!.validate()) {
-                          print("Data added Successfully");
-                          emailcontroller.clear();
-                          passcontroller.clear();
-                          if (_SelectedVal == 'Patient') {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => Navnpatient(),
-                              ),
-                            );
-                          } else if (_SelectedVal == 'Doctor') {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => NavigationBaar(),
-                              ),
-                            );
-                          } else if (_SelectedVal == 'Nurse') {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => Navnurse(),
-                              ),
-                            );
-                          } else if (_SelectedVal == 'Driver') {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => Navdriver(),
-                              ),
-                            );
-                          }
+                          login();
                         }
                       },
                       child: Container(

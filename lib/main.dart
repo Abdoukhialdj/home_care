@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:home_me/fieldScreen.dart';
 import 'package:home_me/model/inscreption.dart';
 
+
+
+String token = "";
+String email = "";
 void main() {
   runApp(MyApp());
 }
